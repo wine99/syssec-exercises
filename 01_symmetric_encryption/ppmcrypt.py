@@ -2,6 +2,7 @@ import string
 import secrets
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
 
 
 class PPMImage:
@@ -61,8 +62,9 @@ class PPMImage:
         """
         if mode.lower() == 'ecb':
             # --------- add your code here --------
-            raise NotImplementedError(f'mode of operation {mode} not implemented')
-            # ciphertext = ???
+            data = pad(self.data, 16)
+            cipher = AES.new(key, AES.MODE_ECB)
+            ciphertext = cipher.encrypt(data)
             # ----- end add your code here --------
             # replace the image data with the ciphertext
             self.data = bytearray(ciphertext)
@@ -70,9 +72,10 @@ class PPMImage:
             self.comments.append(b'X-mode: ecb')
         elif mode.lower() == 'cbc':
             # --------- add your code here --------
-            raise NotImplementedError(f'mode of operation {mode} not implemented')
-            # iv = ???
-            # ciphertext = ???
+            data = pad(self.data, 16)
+            cipher = AES.new(key, AES.MODE_CBC)
+            ciphertext = cipher.encrypt(data)
+            iv = cipher.iv
             # ----- end add your code here --------
             # replace the image data with the ciphertext
             self.data = bytearray(ciphertext)
@@ -82,9 +85,9 @@ class PPMImage:
             self.comments.append(f'X-iv: {iv.hex()}'.encode())
         elif mode.lower() == 'ctr':
             # --------- add your code here --------
-            raise NotImplementedError(f'mode of operation {mode} not implemented')
-            # nonce = ???
-            # ciphertext = ???
+            cipher = AES.new(key, AES.MODE_CTR)
+            ciphertext = cipher.encrypt(self.data)
+            nonce = cipher.nonce
             # ----- end add your code here --------
             # replace the image data with the ciphertext
             self.data = bytearray(ciphertext)
@@ -146,8 +149,9 @@ class PPMImage:
 
         if mode.lower() == 'ecb':
             # --------- add your code here --------
-            raise NotImplementedError(f'mode of operation {mode} not implemented')
-            # plaintext = ???
+            cipher = AES.new(key, AES.MODE_ECB)
+            plaintext = cipher.decrypt(self.data)
+            plaintext = unpad(plaintext, 16)
             # ----- end add your code here --------
             # replace the image data with the plaintext
             self.data = bytearray(plaintext)
@@ -157,8 +161,9 @@ class PPMImage:
             # Read the used IV from the comments
             iv = bytes.fromhex(find_property_in_comments('iv'))
             # --------- add your code here --------
-            raise NotImplementedError(f'mode of operation {mode} not implemented')
-            # plaintext = ???
+            cipher = AES.new(key, AES.MODE_CBC, iv)
+            plaintext = cipher.decrypt(self.data)
+            plaintext = unpad(plaintext, 16)
             # ----- end add your code here --------
             # replace the image data with the plaintext
             self.data = bytearray(plaintext)
@@ -168,8 +173,8 @@ class PPMImage:
             # Read the used nonce from the comments
             nonce = bytes.fromhex(find_property_in_comments('nonce'))
             # --------- add your code here --------
-            raise NotImplementedError(f'mode of operation {mode} not implemented')
-            # plaintext = ???
+            cipher = AES.new(key, AES.MODE_CTR, nonce=nonce)
+            plaintext = cipher.decrypt(self.data)
             # ----- end add your code here --------
             # replace the image data with the plaintext
             self.data = bytearray(plaintext)
@@ -305,6 +310,9 @@ class PPMImage:
         file.write(header.encode())
         file.write(self.data)
 
+    def modify_first_block(self):
+        self.data[:16] = get_random_bytes(16)
+
 
 def test():
     """Simple test of correctness."""
@@ -316,10 +324,48 @@ def test():
         image = original_image.copy()
         image.encrypt(key, mode)
         assert original_image != image, f'encrypting with {mode} mode should change the image'
+        with open(f'dk.{mode}.ppm', 'wb') as encrpyted_f:
+            image.write_to_file(encrpyted_f)
         image.decrypt(key)
         assert original_image == image, f'encrypting and decrypting with {mode} mode should yield the original image'
+
+    modify_cbc_ctr(key)
+
+
+def modify_cbc_ctr(key):
+    for mode in ['ecb', 'cbc']:
+        with open(f'dk.{mode}.ppm', 'rb') as f:
+            image = PPMImage.load_from_file(f)
+            image.modify_first_block()
+            image.decrypt(key)
+            with open(f'dk.{mode}.mod.ppm', 'wb') as out_f:
+                image.write_to_file(out_f)
+
+
+def xor(a, b, c):
+    return bytes(a ^ b ^ c for ((a, b), c) in zip(zip(a, b), c))
+
+
+def dk2se():
+    with open('dk.ppm', 'rb') as f:
+        original_image = PPMImage.load_from_file(f)
+
+    key = secrets.token_bytes(16)
+    image = original_image.copy()
+    image.encrypt(key, 'ctr')
+
+    """ tampering """
+    with open('se.ppm', 'rb') as se_f:
+        se_image = PPMImage.load_from_file(se_f)
+    image.data = xor(image.data, original_image.data, se_image.data)
+    """ tampering end """
+
+    image.decrypt(key)
+    with open('dk.ctr.tamper.ppm', 'wb') as out_f:
+        image.write_to_file(out_f)
 
 
 if __name__ == '__main__':
     # The following is executed if you run `python3 ppmcrypt.py`.
+    dk2se()
     test()
