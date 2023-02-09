@@ -97,10 +97,9 @@ class PPMImage:
             self.comments.append(f'X-nonce: {nonce.hex()}'.encode())
         elif mode.lower() == 'gcm':
             # --------- add your code here --------
-            raise NotImplementedError(f'mode of operation {mode} not implemented')
-            # nonce = ???
-            # ciphertext = ???
-            # tag = ???
+            cipher = AES.new(key, AES.MODE_GCM)
+            ciphertext, tag = cipher.encrypt_and_digest(self.data)
+            nonce = cipher.nonce
             # ----- end add your code here --------
             # replace the image data with the ciphertext
             self.data = bytearray(ciphertext)
@@ -186,8 +185,8 @@ class PPMImage:
             # Read the authentication tag from the comments
             tag = bytes.fromhex(find_property_in_comments('tag'))
             # --------- add your code here --------
-            raise NotImplementedError(f'mode of operation {mode} not implemented')
-            # plaintext = ???
+            cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+            plaintext = cipher.decrypt_and_verify(self.data, tag)
             # ----- end add your code here --------
             # replace the image data with the plaintext
             self.data = bytearray(plaintext)
@@ -310,8 +309,8 @@ class PPMImage:
         file.write(header.encode())
         file.write(self.data)
 
-    def modify_first_block(self):
-        self.data[:16] = get_random_bytes(16)
+    def modify_100px(self):
+        self.data[:300] = bytes.fromhex('0000FF') * 100
 
 
 def test():
@@ -326,20 +325,16 @@ def test():
         assert original_image != image, f'encrypting with {mode} mode should change the image'
         with open(f'dk.{mode}.ppm', 'wb') as encrpyted_f:
             image.write_to_file(encrpyted_f)
+        mod_image = image.copy()
+        mod_image.modify_100px()
+        try:
+            mod_image.decrypt(key)
+            with open(f'dk.{mode}.mod.ppm', 'wb') as mod_f:
+                mod_image.write_to_file(mod_f)
+        except ValueError as e:
+            print(f'{mode} failed: {e}')
         image.decrypt(key)
         assert original_image == image, f'encrypting and decrypting with {mode} mode should yield the original image'
-
-    modify_cbc_ctr(key)
-
-
-def modify_cbc_ctr(key):
-    for mode in ['ecb', 'cbc']:
-        with open(f'dk.{mode}.ppm', 'rb') as f:
-            image = PPMImage.load_from_file(f)
-            image.modify_first_block()
-            image.decrypt(key)
-            with open(f'dk.{mode}.mod.ppm', 'wb') as out_f:
-                image.write_to_file(out_f)
 
 
 def xor(a, b, c):
