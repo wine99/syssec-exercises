@@ -4,6 +4,7 @@ Adapted from the pseudocode given at https://en.wikipedia.org/wiki/SHA-2#Pseudoc
 """
 
 import struct
+import functools
 
 
 def sha256(message: bytes) -> bytes:
@@ -24,7 +25,10 @@ def sha256(message: bytes) -> bytes:
     internal_state = b'j\t\xe6g\xbbg\xae\x85<n\xf3r\xa5O\xf5:Q\x0eR\x7f\x9b\x05h\x8c\x1f\x83\xd9\xab[\xe0\xcd\x19'
 
     # TODO implement this
-    pass
+    padding = build_padding(len(message))
+    message += padding
+    chunks = split_chunks(message)
+    return functools.reduce(lambda state, chunk: compress(chunk, state), chunks, internal_state)
 
 
 def sha256_extend(given_hash: bytes, prefix_length: int, message_suffix: bytes) -> bytes:
@@ -43,7 +47,10 @@ def sha256_extend(given_hash: bytes, prefix_length: int, message_suffix: bytes) 
     assert prefix_length % 64 == 0
 
     # TODO implement this
-    pass
+    padding = build_padding(len(message_suffix))
+    message_suffix += padding
+    chunks = split_chunks(message_suffix)
+    return functools.reduce(lambda state, chunk: compress(chunk, state), chunks, given_hash)
 
 
 def padded_size(message_len: int) -> int:
