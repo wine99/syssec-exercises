@@ -47,7 +47,7 @@ def sha256_extend(given_hash: bytes, prefix_length: int, message_suffix: bytes) 
     assert prefix_length % 64 == 0
 
     # TODO implement this
-    padding = build_padding(len(message_suffix))
+    padding = build_padding(prefix_length + len(message_suffix))
     message_suffix += padding
     chunks = split_chunks(message_suffix)
     return functools.reduce(lambda state, chunk: compress(chunk, state), chunks, given_hash)
