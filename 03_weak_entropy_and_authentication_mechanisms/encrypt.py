@@ -30,8 +30,8 @@ def dec():
         tag = f_in.read(16)
         cipher = f_in.read()
 
-    seed = int(datetime.fromisoformat('2023-02-15').timestamp())
-    end_search = int(datetime.fromisoformat('2023-02-14').timestamp())
+    seed = int(datetime.fromisoformat('2023-02-22').timestamp())
+    end_search = int(datetime.fromisoformat('2023-02-21').timestamp())
     while True:
         if seed < end_search:
             raise "failed"
