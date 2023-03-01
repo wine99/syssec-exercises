@@ -1,14 +1,15 @@
 # Exercises: Link Layer Security
 
+There are some hints and troubleshooting information [in this page](hints.md). Make sure to check it if you have problems or if you are running a native enrivonment without support to virtualization (such as an ARM-based Mac). 
 
 ## Preliminaries
 
 You should begin by installing required dependencies.
 
-### Ubuntu 21.04 / Debian 11
+### Ubuntu 22.04 Virtual Machine
 
 ```
-sudo apt install aircrack-ng dsniff wireshark
+sudo apt install net-tools aircrack-ng dsniff wireshark
 ```
 
 Wireshark will ask about users without priviledges being able to capture packets, for which you should answer affirmatively.
@@ -25,7 +26,7 @@ For attacking WPA-PSK2, a common approach is to capture the handshake packets wh
 
 Because not all interfaces support monitor mode and this functionality is typically not available in Virtual Machines, we already provide packet captures of the handshake for the two access points in this repository, and refer interested readers to [a tutorial](https://www.aircrack-ng.org/doku.php?id=cracking_wpa) for more details.
 
-Your first task is to find a dictionary of common passwords in English to run the attack, and to discover the link layer address (MAC) of the access point.
+Your first task is to find a dictionary of common words in English to run the attack, and to discover the link layer address (MAC) of the access point.
 With these informations, you can then run:
 
 ```
@@ -34,6 +35,7 @@ aircrack-ng -w <dictionary_file> -b <link_layer_address> <packet_capture>
 
 You should be able to obtain the correct password after a few minutes of computation.
 
+**Hint**: You can find the link layer address by looking at the packet captures in the repository. If you want to find it yourself by scanning the network, hints for your _native_ operating system can be found [here](hints.md).
 
 ## Exercise 2: Sniffing the network
 
@@ -57,7 +59,7 @@ We will abstract the Virtual Machine as a hostile node in a wireless network. Al
 1. After the settings are changed, run Wireshark inside the Virtual Machine. You should be able to start a Capture session by clicking directly on the Shark symbol, and- all traffic from the host should become immediately visible. If you are completely new to Wireshark, a nice tutorial for beginners can be found at https://www.youtube.com/watch?v=TkCSr30UojM
 
 2. We can perform more directed sniffing by restricting to a hostname. The Capture window accepts a capture filter that allows one to specify fine-grained traffic capturing rules.
-To show how that works, we have an HTTP server running in the same network on every IP in the range `192.168.1.2--49` or `192.168.2.2--49`, depending on your network.
+To show how that works, we have an HTTP server running in the same network on every IP in the range `192.168.1.2--69` or `192.168.2.2--69`, depending on your network.
 Pick one IP address in the range randomly and start a new capture with `host 192.168.X.Y` as the capture filter (replace `X` and `Y` with the actual address).
 
 3. Now access the IP address on the host machine at port `8000` by typing `http://192.168.X.Y:8000/` in your browser. Since the VM uses a bridged interface, you should be able to see the plaintext HTTP traffic in Wireshark.
