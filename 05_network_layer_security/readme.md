@@ -84,10 +84,10 @@ If you reached here we have a bonus round for you. For this last exercise, we wi
 Configure the gateway in your mobile device to point directly to the IP address of the VM and stop the execution of the `arpspoof` program.
 
 Let's use the scripting capability of `mitmproxy` to mount an _active_ attack.
-Our simple website has a login capability, for which the credentials are not known. There should be legitimate traffic in the local network of successful login attempts, so find the correct flows in `mitmproxy` to obtain a pair of correct credentials.
+Our simple website has a login capability, for which the credentials are `admin`/`admin`.
 
 Now access the website through your mobile device with the right credentials and login. You should now be able to access the `View Secrets` and `Upload Secrets` functionalities.
-The `View Secrets` functionality will just show you some secret keyword, which should be visible in `mitmproxy` as well.
+The `View Secrets` functionality will just show you some secret text, which should be visible in `mitmproxy` as well.
 The `Upload Secrets` functionality is more interesting and allows the user to encrypt a message under a public key returned by the server.
 Your final task is to _replace_ that public key with a key pair for which you know the private key (to be able to decrypt).
 The code for the server portion is provided for reference in the repository inside the folder `simple-website`.
