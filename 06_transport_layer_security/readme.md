@@ -101,7 +101,7 @@ The code for the server portion is provided for reference in the repository insi
 In order to achieve your goal, generate an RSA key pair in PEM format and plug the values marked as TODO in the file `simple-website/mitm_pk.py`. Now restart `mitmproxy` with the command below:
 
 ```
-$ mitmproxy --mode transparent --showhost -s mitm_pk.py
+$ mitmproxy --mode transparent --showhost --ssl-insecure -s mitm_pk.py
 ```
 
 Recover the message from the encryption provided by the client.
