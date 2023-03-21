@@ -123,6 +123,17 @@ the file.
 **Your task**: Trick the `toctou` program into printing the file `flag.txt`
 even though the check should prevent it.
 
+First, generate the `flag.txt` files as in the `Makefile` above, such that it contains the string "flag{success!}" and change permissions as follows:
+``` 
+chmod go-rwx flag.txt
+sudo chown root:root flag.txt 
+```
+Also change the following:
+``` 
+sudo sysctl -w fs.protected_regular=0
+sudo sysctl -w fs.protected_symlinks=0
+```
+
 <details>
 <summary>Hint 1</summary>
 
@@ -268,6 +279,7 @@ value 0x1337, which clearly should never happen.
 If the check would pass, then the function `win` would be executed.
 
 **Your task**: Find a way to change the variable and execute `win`.
+When compiling manually, be sure to add the `-fno-stack-protector` flag.
 
 To feed raw bytes to the program you can use, e.g., `python` or `echo` and
 connect its output with a pipe to the program's input:
