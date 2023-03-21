@@ -376,9 +376,3 @@ and the address stays the same in each execution.
 If everything works, you should land in a newly spawned shell (the `cat` is
 necessary to prevent the shell from getting immediately closed again).
 Try executing commands.
-
-
-
-## Solutions
-
-See [here](solutions.md) for example solutions.
