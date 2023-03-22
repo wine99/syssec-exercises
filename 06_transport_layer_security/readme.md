@@ -2,9 +2,9 @@
 
 ## Preliminaries
 
-We do not require any new dependencies for this exercise. Make sure to have Wireshark and `mitmproxy` installed in your VM in bridged mode.
+We do not require any new dependencies for this exercise beyond what was installed in the last exercise. Make sure to have Wireshark and `mitmproxy` installed in your VM in bridged mode.
 
-**Observation**: If your VM is not working you can also install Wireshark and `mitmproxy` in your own host machine. In that case, replace referrences to IP address `192.168.1/2.Z` with `192.168.1/2.Y`
+**Observation**: If your VM is not working you can also install Wireshark and `mitmproxy` in your own host machine. In that case, replace referrences to IP address `192.168.1/2.Z` with `192.168.1/2.Y` as per the diagram below.
 
 ### Network Layout and Preparation
 
@@ -12,16 +12,17 @@ This time the network will be simpler than the previous one, but will follow the
 
 As previously, there are two wireless networks (`NETSEC` and `SYSSEC`), and the wired network is on subnetwork `192.168.3.0/24`.
 Now the Access Point (AP) serves as the _router_ between the wireless and the wired network.
-The Web server runs on a Raspberry Pi in the wired network, with IP address `192.168.3.2`, and abstracts a machine running on the Internet, to/from which traffic is routed by intermediate nodes.
+The Web server runs on a Raspberry Pi in the wired network, with IP addresses in the range `192.168.3.2-69`, and abstracts a machine running on the Internet, to/from which traffic is routed by intermediate nodes.
 
-![image](https://github.com/lenerd/au-syssec-e21-exercises/blob/master/06_transport_layer_security/network-layout.png)
+![image](https://github.com/dfaranha/au-syssec-f23/blob/master/exercises/06_transport_layer_security/network-layout.png)
 
-Connect to one of the wireless networks using the host system (you know the password) and test that you can connect to `http://192.168.3.2/` using a Web browser (this time we are using the default port `80`).
+Pick an IP address `192.168.3.W` in the range `192.168.3.2-69`.
+Connect to one of the wireless networks using the host system (you know the password) and test that you can connect to `http://192.168.3.W/` using a Web browser (this time we are using the default port `80`).
 The traffic between your browser and the server is now being routed by the AP with manually inserted static routes.
 
-Start the VM and make sure that you can `ping 192.168.3.2` and access the HTTP address above in the VM.
-Verify that you can capture traffic between the host and `192.168.3.2` using Wireshark running in the VM, to confirm that the interface is functional in bridged mode.
-Now access `https://192.168.3.2/` (HTTPS) and you will receive a warning about the self-signed certificate, which you should accept as trusted.
+Start the VM and make sure that you can `ping 192.168.3.W` and access the HTTP address above in the VM.
+Verify that you can capture traffic between the host and `192.168.3.W` using Wireshark running in the VM, to confirm that the interface is functional in bridged mode.
+Now access `https://192.168.3.W/` (HTTPS) and you will receive a warning about the self-signed certificate, which you should accept as trusted.
 
 ## Exercise 1: Malicious-in-the-middle against HTTP
 
@@ -42,11 +43,6 @@ $ sudo sysctl -w net.ipv4.ip_forward=1
 $ sudo sysctl -w net.ipv4.conf.all.send_redirects=0
 ```
 
-It might be necessary to also set the following, more specific setting, where `<interface>` is replaced with you network interface (e.g., `wlan0` or `enp5s0`):
-```
-$ sudo sysctl -w net.ipv4.conf.<interface>.send_redirects=0
-```
-
 We will run `mitmproxy` in the VM to be able to perform some processing of the captured traffic. First, configure the `iptables` firewall to send all HTTP traffic captured at ports `80` and `443` in the VM to port `8080` under control of `mitmproxy`:
 
 ```
@@ -63,13 +59,13 @@ $ mitmproxy --ssl-insecure --mode transparent --showhost
 
 **Observation**: If you are running `mitmproxy` in your host system directly (without a VM), make the same configurations above in your host machine firewall.
 
-If everything is working correctly, you should try again to access the Web server `http://192.168.3.2/` in your mobile device and start seeing captured _flows_ in the `mitmproxy` window.
+If everything is working correctly, you should try again to access the Web server `http://192.168.3.W/` in your mobile device and start seeing captured _flows_ in the `mitmproxy` window.
 In this window, you can select a flow by using the arrows and pressing ENTER, while pressing the letter `q` goes back to the overview screen.
 
 **Observation 1**: If you **cannot** see flows in `mitmproxy`, try running the command below to bypass [a problem with the VirtualBox driver](https://security.stackexchange.com/questions/197453/mitm-using-arp-spoofing-with-kali-linux-running-on-virtualbox-with-bridged-wifi):
 
 ```
-sudo arpspoof -i <interface> -t <mobile> 192.168.3.2
+sudo arpspoof -i <interface> -t <mobile> 192.168.3.W
 ```
 
 **Observation 2**: If you still **cannot** see flows in `mitmproxy`, try restoring your `IP Settings` configuration to DHCP and configure ``192.168.1/2.Z`` as the `Proxy` running on port `8080`. Replace the command line above to run `mitmproxy` in _proxy_ mode:
@@ -81,19 +77,23 @@ Access the Login page, enter some credentials and observe that they are visible 
 
 ## Exercise 2: Malicious-in-the-middle against HTTPS
 
-Now try accessing `https://192.168.3.2/` in your mobile device.
+Now try accessing `https://192.168.3.W/` in your mobile device.
 You should get another warning about a non-trusted certificate! Inspect the certificate and check that it is suspicious indeed. :)
 After accepting the new certificate, you should be able to access the website normally.
 Make sure you access the Login page again and that captured credentials are still visible.
 
+**Observation 3**: You can also obtain the self-signed certificate generated by `mitmproxy` by visiting the website `mitm.it`. Think for a little bit how that mechanism works!
+
 ## BONUS: Manipulate traffic in mitmproxy
 
-If you reached this point, we have a bonus round for you.
+If you reached here we have a bonus round for you. For this last exercise, we will simplify our setup to remove ARP spoofing.
+Configure the gateway in your mobile device to point directly to the IP address of the VM and stop the execution of the `arpspoof` program.
+
 Let's use the scripting capability of `mitmproxy` to mount an _active_ attack.
-You have seen that our simple website has a login capability, for which the _right_ credentials are not known. There should be legitimate traffic in the local network of successful login attempts, so find the correct flows in `mitmproxy` to obtain a pair of correct credentials.
+Our simple website has a login capability, for which the credentials are `admin`/`admin`.
 
 Now access the website through your mobile device with the right credentials and login. You should now be able to access the `View Secrets` and `Upload Secrets` functionalities.
-The `View Secrets` functionality will just show you some secret keyword, which should be visible in `mitmproxy` as well.
+The `View Secrets` functionality will just show you some secret text, which should be visible in `mitmproxy` as well.
 The `Upload Secrets` functionality is more interesting and allows the user to encrypt a message under a public key returned by the server.
 Your final task is to _replace_ that public key with a key pair for which you know the private key (to be able to decrypt).
 The code for the server portion is provided for reference in the repository inside the folder `simple-website`.
@@ -101,7 +101,7 @@ The code for the server portion is provided for reference in the repository insi
 In order to achieve your goal, generate an RSA key pair in PEM format and plug the values marked as TODO in the file `simple-website/mitm_pk.py`. Now restart `mitmproxy` with the command below:
 
 ```
-$ mitmproxy --mode transparent --showhost -s mitm_pk.py
+$ mitmproxy --mode transparent --showhost --ssl-insecure -s mitm_pk.py
 ```
 
 Recover the message from the encryption provided by the client.
