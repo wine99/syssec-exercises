@@ -123,7 +123,7 @@ the file.
 **Your task**: Trick the `toctou` program into printing the file `flag.txt`
 even though the check should prevent it.
 
-First, generate the `flag.txt` files as in the `Makefile` above, such that it contains the string "flag{success!}" and change permissions as follows:
+First, generate the `flag.txt` file as in the `Makefile` above, such that it contains the string "flag{success!}" and change permissions as follows:
 ``` 
 chmod go-rwx flag.txt
 sudo chown root:root flag.txt 
