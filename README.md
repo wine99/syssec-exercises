@@ -19,4 +19,4 @@ Exercises
 - [07.03.2023 Network Layer Security](05_network_layer_security)
 - [14.03.2023 Transport Layer Security](06_transport_layer_security)
 - [21.03.2023 Software Security I](07_software_security_i)
-- [28.03.2023 Software Security II](0(_software_security_ii)
+- [28.03.2023 Software Security II](08_software_security_ii)
