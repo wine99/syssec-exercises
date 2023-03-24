@@ -48,7 +48,7 @@ For this you have to set the registers in the following way:
 The binary is also running on a server, and you can talk to it via
 [`netcat`](https://man.archlinux.org/man/netcat.1):
 ```
-$ nc rop.syssec.lnrd.net 1337
+$ nc rop.syssec.dk 1337
 to execute a program (e.g., a shell), you can use the execve syscall
 [...]
 ROP me!
@@ -57,7 +57,7 @@ ROP me!
 Write a program that outputs your ROP chain and feed it to the the remotely running program.
 (The `cat` trick is used again to keep the input open and allow commands to be entered.)
 ```
-$ (python solve.py; cat) | nc rop.syssec.lnrd.net 1337
+$ (python solve.py; cat) | nc rop.syssec.dk 1337
 to execute a program (e.g., a shell), you can use the execve syscall
 - rax = 0x3b (syscall number)
 - rdi = <pointer to the command> (e.g., "/bin/sh")
