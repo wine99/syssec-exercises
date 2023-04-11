@@ -33,7 +33,7 @@ software.
 
     - [CWE VIEW: Software Development](https://cwe.mitre.org/data/definitions/699.html)
     - [CWE VIEW: Research Concepts](https://cwe.mitre.org/data/definitions/1000.html)
-    - [CWE VIEW: Weaknesses in the 2021 CWE Top 25 Most Dangerous Software Weaknesses](https://cwe.mitre.org/data/definitions/1337.html)
+    - [CWE VIEW: 2022 CWE Top 25 Most Dangerous Software Weaknesses](https://cwe.mitre.org/top25/archive/2022/2022_cwe_top25.html)
 
 
 
