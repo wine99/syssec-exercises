@@ -27,7 +27,7 @@ software.
    categorizes security-related problems and their relationships in software
    and hardware.
 
-   Try to find some of the vulnerability classes you though of in CWE.
+   Try to find some of the vulnerability classes you thought of in CWE.
 
    You can for example use the following views to navigate CWE:
 
@@ -143,7 +143,7 @@ instrumentation and `afl-fuzz` to perform the actual fuzzing.
 
 ### Bonus: Exploit the Programs
 
-If you are ~~bored~~want a challenge, you can try to exploit the two programs
+If you are ~~bored~~ want a challenge, you can try to exploit the two programs
 at home.  These are non-trivial, though, and at least `random_password`
 requires concepts that we did not discuss in class.  Goal is to print
 `flag.txt` or to get a shell.
